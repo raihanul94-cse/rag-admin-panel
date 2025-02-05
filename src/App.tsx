@@ -4,7 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
-import AgencyList from './pages/AgencyList';
+import CompanyList from './pages/CompanyList';
 import { AuthProvider } from './context/AuthContextProvider';
 import { useAuth } from './context/AuthContext';
 
@@ -32,10 +32,10 @@ function App() {
               }
             />
             <Route
-              path="/agencies"
+              path="/companies"
               element={
                 <ProtectedRoute>
-                  <AgencyList />
+                  <CompanyList />
                 </ProtectedRoute>
               }
             />

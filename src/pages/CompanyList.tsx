@@ -2,15 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { Plus, Check, X, Edit2, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Navbar from '../components/Navbar';
-import { Agency } from '../types';
+import { Company } from '../types';
 import { apiRequest } from '../lib/apiHelper';
 
-const AgencyList: React.FC = () => {
-  const [agencies, setAgencies] = useState<Agency[]>([]);
+const CompanyList: React.FC = () => {
+  const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
-  const [editingAgency, setEditingAgency] = useState<Agency | null>(null);
+  const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [formData, setFormData] = useState({
     licenseNumber: '',
     licenseType: '',
@@ -31,52 +31,52 @@ const AgencyList: React.FC = () => {
     notify: true,
   });
 
-  const fetchAgencies = async () => {
+  const fetchCompanies = async () => {
     try {
-      const response = await apiRequest<Agency[]>({
-        url: '/api/agencies',
+      const response = await apiRequest<Company[]>({
+        url: '/api/companies',
         method: 'GET',
         params: { page: 1, limit: 10 },
         requireAuth: true,
       });
 
       if (response.data) {
-        setAgencies(response.data);
+        setCompanies(response.data);
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to fetch agencies');
+      toast.error(error.response?.data?.message || 'Failed to fetch companies');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchAgencies();
+    fetchCompanies();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (editingAgency) {
-        await apiRequest<Agency[]>({
-          url: `/api/agencies/${editingAgency.id}`,
+      if (editingCompany) {
+        await apiRequest<Company[]>({
+          url: `/api/companies/${editingCompany.id}`,
           method: 'PUT',
           data: formData,
           requireAuth: true,
         });
-        toast.success('Agency updated successfully');
+        toast.success('Company updated successfully');
       } else {
-        await apiRequest<Agency[]>({
-          url: '/api/agencies',
+        await apiRequest<Company[]>({
+          url: '/api/companies',
           method: 'POST',
           data: formData,
           requireAuth: true,
         });
-        toast.success('Agency added successfully');
+        toast.success('Company added successfully');
       }
 
       setShowAddModal(false);
-      setEditingAgency(null);
+      setEditingCompany(null);
       setFormData({
         licenseNumber: '',
         licenseType: '',
@@ -91,7 +91,7 @@ const AgencyList: React.FC = () => {
         phoneNumber: '',
         emailAddress: '',
       });
-      fetchAgencies();
+      fetchCompanies();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Operation failed');
     }
@@ -99,8 +99,8 @@ const AgencyList: React.FC = () => {
 
   const handleStatusChange = async (id: number, status: 'approved' | 'rejected') => {
     try {
-      await apiRequest<Agency[]>({
-        url: `api/agencies/${id}/status`,
+      await apiRequest<Company[]>({
+        url: `api/companies/${id}/status`,
         method: 'PUT',
         data: {
           status: status,
@@ -109,58 +109,58 @@ const AgencyList: React.FC = () => {
         },
         requireAuth: true,
       });
-      toast.success(`Agency ${status} successfully`);
-      fetchAgencies();
+      toast.success(`Company ${status} successfully`);
+      fetchCompanies();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Status update failed');
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this agency? All data related to agency will be deleted permanently.')) return;
+    if (!window.confirm('Are you sure you want to delete this company? All data related to company will be deleted permanently.')) return;
 
     try {
-      await apiRequest<Agency[]>({
-        url: `/api/agencies/${id}`,
+      await apiRequest<Company[]>({
+        url: `/api/companies/${id}`,
         method: 'DELETE',
         requireAuth: true,
       });
-      toast.success('Agency deleted successfully');
-      fetchAgencies();
+      toast.success('Company deleted successfully');
+      fetchCompanies();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Delete failed');
     }
   };
 
-  const handleEdit = (agency: Agency) => {
-    setEditingAgency(agency);
+  const handleEdit = (company: Company) => {
+    setEditingCompany(company);
     setFormData({
-      licenseNumber: agency.licenseNumber,
-      licenseType: agency.licenseType,
-      licenseExpirationDate: agency.licenseExpirationDate,
-      address: agency.address,
-      city: agency.city,
-      state: agency.state,
-      country: agency.country,
-      zip: agency.zip,
-      companyName: agency.companyName,
-      registeredAgentName: agency.registeredAgentName,
-      phoneNumber: agency.phoneNumber,
-      emailAddress: agency.emailAddress,
+      licenseNumber: company.licenseNumber,
+      licenseType: company.licenseType,
+      licenseExpirationDate: company.licenseExpirationDate,
+      address: company.address,
+      city: company.city,
+      state: company.state,
+      country: company.country,
+      zip: company.zip,
+      companyName: company.companyName,
+      registeredAgentName: company.registeredAgentName,
+      phoneNumber: company.phoneNumber,
+      emailAddress: company.emailAddress,
     });
     setShowAddModal(true);
   };
 
-  const handleReject = (agency: Agency) => {
-    setEditingAgency(agency);
+  const handleReject = (company: Company) => {
+    setEditingCompany(company);
     setShowRejectModal(true);
   };
 
   const handleSubmitRejectReason = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (editingAgency?.id) {
-      await handleStatusChange(editingAgency.id, 'rejected');
+    if (editingCompany?.id) {
+      await handleStatusChange(editingCompany.id, 'rejected');
       setShowRejectModal(false);
       setRejectionFormData({
         notify: false,
@@ -176,10 +176,10 @@ const AgencyList: React.FC = () => {
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-semibold text-gray-900">Agencies</h1>
+            <h1 className="text-2xl font-semibold text-gray-900">Companies</h1>
             <button
               onClick={() => {
-                setEditingAgency(null);
+                setEditingCompany(null);
                 setFormData({
                   licenseNumber: '',
                   licenseType: '',
@@ -199,7 +199,7 @@ const AgencyList: React.FC = () => {
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add Agency
+              Add Company
             </button>
           </div>
 
@@ -208,35 +208,35 @@ const AgencyList: React.FC = () => {
           ) : (
             <div className="bg-white shadow overflow-hidden sm:rounded-md">
               <ul className="divide-y divide-gray-200">
-                {agencies.map((agency) => (
-                  <li key={agency.id} className="px-6 py-4">
+                {companies.map((company) => (
+                  <li key={company.id} className="px-6 py-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-lg font-medium text-gray-900">{agency.companyName}</h3>
-                        <p className="text-sm text-gray-500">{agency.emailAddress}</p>
+                        <h3 className="text-lg font-medium text-gray-900">{company.companyName}</h3>
+                        <p className="text-sm text-gray-500">{company.emailAddress}</p>
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            agency.status === 'active'
+                            company.status === 'active'
                               ? 'bg-green-100 text-green-800'
-                              : agency.status === 'rejected'
+                              : company.status === 'rejected'
                                 ? 'bg-red-100 text-red-800'
                                 : 'bg-yellow-100 text-yellow-800'
                           }`}
                         >
-                          {agency.status}
+                          {company.status}
                         </span>
                       </div>
                       <div className="flex space-x-2">
-                        {agency.status === 'pending' && (
+                        {company.status === 'pending' && (
                           <>
                             <button
-                              onClick={() => handleStatusChange(agency.id, 'approved')}
+                              onClick={() => handleStatusChange(company.id, 'approved')}
                               className="text-green-600 hover:text-green-900"
                             >
                               <Check className="h-5 w-5" />
                             </button>
                             <button
-                              onClick={() => handleReject(agency)}
+                              onClick={() => handleReject(company)}
                               className="text-red-600 hover:text-red-900"
                             >
                               <X className="h-5 w-5" />
@@ -244,13 +244,13 @@ const AgencyList: React.FC = () => {
                           </>
                         )}
                         <button
-                          onClick={() => handleEdit(agency)}
+                          onClick={() => handleEdit(company)}
                           className="text-blue-600 hover:text-blue-900"
                         >
                           <Edit2 className="h-5 w-5" />
                         </button>
                         <button
-                          onClick={() => handleDelete(agency.id)}
+                          onClick={() => handleDelete(company.id)}
                           className="text-red-600 hover:text-red-900"
                         >
                           <Trash2 className="h-5 w-5" />
@@ -294,7 +294,7 @@ const AgencyList: React.FC = () => {
                       <input
                         type="email"
                         required
-                        readOnly={!!editingAgency}
+                        readOnly={!!editingCompany}
                         className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         value={formData.emailAddress}
                         onChange={(e) => setFormData({ ...formData, emailAddress: e.target.value })}
@@ -423,7 +423,7 @@ const AgencyList: React.FC = () => {
                     type="submit"
                     className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm"
                   >
-                    {editingAgency ? 'Update' : 'Add'} Agency
+                    {editingCompany ? 'Update' : 'Add'} Company
                   </button>
                   <button
                     type="button"
@@ -507,7 +507,7 @@ const AgencyList: React.FC = () => {
 
                     <div className="mb-4">
                       <label className="block text-gray-700 text-sm font-bold mb-2">
-                        Notify Agency
+                        Notify Company
                       </label>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -546,4 +546,4 @@ const AgencyList: React.FC = () => {
   );
 };
 
-export default AgencyList;
+export default CompanyList;

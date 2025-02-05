@@ -1,6 +1,6 @@
 export type AdminRole = 'default_user' | 'sub_user';
 export type AdminStatus = 'active' | 'inactive';
-export type AgencyStatus = 'pending' | 'active' | 'inactive' | 'rejected';
+export type CompanyStatus = 'pending' | 'active' | 'inactive' | 'rejected';
 
 export interface Profile {
   id: string;
@@ -11,7 +11,7 @@ export interface Profile {
   updated_at: string;
 }
 
-export interface Agency {
+export interface Company {
   id: number;
   address: string;
   city: string;
