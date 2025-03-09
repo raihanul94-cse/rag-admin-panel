@@ -1,5 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
 import { Tokens } from '../types';
+import Cookies from 'js-cookie';
 
 declare module 'axios' {
   interface AxiosRequestConfig {
@@ -53,7 +54,7 @@ export async function apiRequest<T>(config: ApiHelperConfig): Promise<{
   links: Record<string, unknown>;
 }> {
   try {
-    const cookieTokens = config.requireAuth ? localStorage.getItem('tokens') : null;
+    const cookieTokens = config.requireAuth ? Cookies.get('tokens') : null;
     let tokens: Tokens | null = null;
 
     if (cookieTokens) {

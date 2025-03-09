@@ -21,7 +21,8 @@ export interface Company {
   licenseNumber: string;
   licenseType: string;
   phoneNumber: string;
-  registeredAgentName: string;
+  registeredAgentFirstName: string;
+  registeredAgentLastName: string;
   country: string;
   state: string;
   status: string;

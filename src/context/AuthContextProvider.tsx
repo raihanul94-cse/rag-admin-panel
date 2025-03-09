@@ -2,18 +2,19 @@ import React, { useState } from 'react';
 import { AuthContext } from './AuthContext';
 import { Admin, Tokens } from '../types';
 import { apiRequest } from '../lib/apiHelper';
+import Cookies from 'js-cookie';
 
 interface LoginResponse {
-  tokens: Tokens;
+  authTokens: Tokens;
   admin: Admin;
 }
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [admin, setAdmin] = useState<Admin | null>(() => {
-    const savedAdmin = localStorage.getItem('admin');
+    const savedAdmin = Cookies.get('admin');
     return savedAdmin ? JSON.parse(savedAdmin) : null;
   });
-  const [tokens, setTokens] = useState<Tokens | null>(() => localStorage.getItem('tokens') as unknown as Tokens);
+  const [tokens, setTokens] = useState<Tokens | null>(() => Cookies.get('tokens') as unknown as Tokens);
 
   const logIn = async (emailAddress: string, password: string) => {
     try {
@@ -23,11 +24,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         data: { emailAddress, password },
         handleTokens: true,
       });
-
-      localStorage.setItem('tokens', JSON.stringify(data.tokens));
-      localStorage.setItem('admin', JSON.stringify(data.admin));
+      const epochTime = data.authTokens.access.expires;
+      
+      Cookies.set('tokens', JSON.stringify(data.authTokens), { expires: new Date(epochTime * 1000) });
+      Cookies.set('admin', JSON.stringify(data.admin), { expires: new Date(epochTime * 1000) });
       setAdmin(data.admin);
-      setTokens(data.tokens);
+      setTokens(data.authTokens);
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Failed to log in');
     }
@@ -47,8 +49,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logOut = () => {
-    localStorage.removeItem('tokens');
-    localStorage.removeItem('admin');
+    Cookies.remove('tokens');
+    Cookies.remove('admin');
     setAdmin(null);
     setTokens(null);
   };

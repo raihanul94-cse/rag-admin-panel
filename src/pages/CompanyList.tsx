@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Check, X, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Check, X, Edit2, Trash2, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Navbar from '../components/Navbar';
 import { Company } from '../types';
@@ -9,6 +9,7 @@ const CompanyList: React.FC = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [formData, setFormData] = useState({
@@ -21,7 +22,8 @@ const CompanyList: React.FC = () => {
     country: '',
     zip: '',
     companyName: '',
-    registeredAgentName: '',
+    registeredAgentFirstName: '',
+    registeredAgentLastName: '',
     phoneNumber: '',
     emailAddress: '',
   });
@@ -29,6 +31,9 @@ const CompanyList: React.FC = () => {
     rejectionReasons: '',
     otherReasons: '',
     notify: true,
+  });
+  const [passwordFormData, setPasswordFormData] = useState({
+    newPassword: '',
   });
 
   const fetchCompanies = async () => {
@@ -87,13 +92,14 @@ const CompanyList: React.FC = () => {
         country: '',
         zip: '',
         companyName: '',
-        registeredAgentName: '',
+        registeredAgentFirstName: '',
+        registeredAgentLastName: '',
         phoneNumber: '',
         emailAddress: '',
       });
       fetchCompanies();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Operation failed');
+      toast.error(error?.message || 'Operation failed');
     }
   };
 
@@ -116,8 +122,30 @@ const CompanyList: React.FC = () => {
     }
   };
 
+  const handlePasswordChange = async (id: number, newPassword: string) => {
+    try {
+      await apiRequest<Company[]>({
+        url: `api/companies/${id}/password`,
+        method: 'PUT',
+        data: {
+          newPassword: newPassword,
+        },
+        requireAuth: true,
+      });
+      toast.success(`Password updated successfully`);
+      fetchCompanies();
+    } catch (error: any) {
+      toast.error(error?.message || 'Password update failed');
+    }
+  };
+
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this company? All data related to company will be deleted permanently.')) return;
+    if (
+      !window.confirm(
+        'Are you sure you want to delete this company? All data related to company will be deleted permanently.'
+      )
+    )
+      return;
 
     try {
       await apiRequest<Company[]>({
@@ -144,7 +172,8 @@ const CompanyList: React.FC = () => {
       country: company.country,
       zip: company.zip,
       companyName: company.companyName,
-      registeredAgentName: company.registeredAgentName,
+      registeredAgentFirstName: company.registeredAgentFirstName,
+      registeredAgentLastName: company.registeredAgentLastName,
       phoneNumber: company.phoneNumber,
       emailAddress: company.emailAddress,
     });
@@ -154,6 +183,11 @@ const CompanyList: React.FC = () => {
   const handleReject = (company: Company) => {
     setEditingCompany(company);
     setShowRejectModal(true);
+  };
+
+  const handlePassword = (company: Company) => {
+    setEditingCompany(company);
+    setShowPasswordModal(true);
   };
 
   const handleSubmitRejectReason = async (e: React.FormEvent) => {
@@ -166,6 +200,18 @@ const CompanyList: React.FC = () => {
         notify: false,
         rejectionReasons: '',
         otherReasons: '',
+      });
+    }
+  };
+
+  const handleSubmitNewPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (editingCompany?.id) {
+      await handlePasswordChange(editingCompany.id, passwordFormData.newPassword);
+      setShowPasswordModal(false);
+      setPasswordFormData({
+        newPassword: ''
       });
     }
   };
@@ -190,7 +236,8 @@ const CompanyList: React.FC = () => {
                   country: '',
                   zip: '',
                   companyName: '',
-                  registeredAgentName: '',
+                  registeredAgentFirstName: '',
+                  registeredAgentLastName: '',
                   phoneNumber: '',
                   emailAddress: '',
                 });
@@ -249,6 +296,15 @@ const CompanyList: React.FC = () => {
                         >
                           <Edit2 className="h-5 w-5" />
                         </button>
+                        {company.status === 'active' && (
+                          <button
+                          onClick={() => handlePassword(company)}
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            <Lock className="h-5 w-5" />
+                          </button>
+                        )}
+
                         <button
                           onClick={() => handleDelete(company.id)}
                           className="text-red-600 hover:text-red-900"
@@ -294,7 +350,6 @@ const CompanyList: React.FC = () => {
                       <input
                         type="email"
                         required
-                        readOnly={!!editingCompany}
                         className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         value={formData.emailAddress}
                         onChange={(e) => setFormData({ ...formData, emailAddress: e.target.value })}
@@ -392,15 +447,29 @@ const CompanyList: React.FC = () => {
                     </div>
                     <div className="mb-4">
                       <label className="block text-gray-700 text-sm font-bold mb-2">
-                        Registered Agent Name
+                        Registered Agent First Name
                       </label>
                       <input
                         type="text"
                         required
                         className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        value={formData.registeredAgentName}
+                        value={formData.registeredAgentFirstName}
                         onChange={(e) =>
-                          setFormData({ ...formData, registeredAgentName: e.target.value })
+                          setFormData({ ...formData, registeredAgentFirstName: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="mb-4">
+                      <label className="block text-gray-700 text-sm font-bold mb-2">
+                        Registered Agent Last Name
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        value={formData.registeredAgentLastName}
+                        onChange={(e) =>
+                          setFormData({ ...formData, registeredAgentLastName: e.target.value })
                         }
                       />
                     </div>
@@ -532,6 +601,51 @@ const CompanyList: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowRejectModal(false)}
+                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPasswordModal && (
+        <div className="fixed z-10 inset-0 overflow-y-auto">
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <form onSubmit={handleSubmitNewPassword}>
+                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="mb-4">
+                      <label className="block text-gray-700 text-sm font-bold mb-2">
+                        New Password
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        value={passwordFormData.newPassword}
+                        onChange={(e) => setPasswordFormData({ ...passwordFormData, newPassword: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                  <button
+                    type="submit"
+                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm"
+                  >
+                    Update Password
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordModal(false)}
                     className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                   >
                     Cancel
