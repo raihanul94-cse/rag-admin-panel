@@ -19,13 +19,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logIn = async (emailAddress: string, password: string) => {
     try {
       const { data } = await apiRequest<LoginResponse>({
-        url: '/api/admins/login',
+        url: '/api/admin/auth/login',
         method: 'POST',
         data: { emailAddress, password },
         handleTokens: true,
       });
       const epochTime = data.authTokens.access.expires;
-      
+
       Cookies.set('tokens', JSON.stringify(data.authTokens), { expires: new Date(epochTime * 1000) });
       Cookies.set('admin', JSON.stringify(data.admin), { expires: new Date(epochTime * 1000) });
       setAdmin(data.admin);

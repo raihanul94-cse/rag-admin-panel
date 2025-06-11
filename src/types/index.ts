@@ -3,7 +3,7 @@ export type AdminStatus = 'active' | 'inactive';
 export type CompanyStatus = 'pending' | 'active' | 'inactive' | 'rejected';
 
 export interface Profile {
-  id: string;
+  uuid: string;
   email: string;
   role: AdminRole;
   status: AdminStatus;
@@ -12,7 +12,7 @@ export interface Profile {
 }
 
 export interface Company {
-  id: number;
+  uuid: string;
   address: string;
   city: string;
   companyName: string;
@@ -30,7 +30,7 @@ export interface Company {
 }
 
 export interface Admin {
-  id: string;
+  uuid: string;
   emailAddress: string;
   role: string;
   status: string;

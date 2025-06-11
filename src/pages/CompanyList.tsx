@@ -39,7 +39,7 @@ const CompanyList: React.FC = () => {
   const fetchCompanies = async () => {
     try {
       const response = await apiRequest<Company[]>({
-        url: '/api/companies',
+        url: '/api/admin/companies',
         method: 'GET',
         params: { page: 1, limit: 10 },
         requireAuth: true,
@@ -64,7 +64,7 @@ const CompanyList: React.FC = () => {
     try {
       if (editingCompany) {
         await apiRequest<Company[]>({
-          url: `/api/companies/${editingCompany.id}`,
+          url: `/api/admin/companies/${editingCompany.uuid}`,
           method: 'PUT',
           data: formData,
           requireAuth: true,
@@ -103,10 +103,10 @@ const CompanyList: React.FC = () => {
     }
   };
 
-  const handleStatusChange = async (id: number, status: 'approved' | 'rejected') => {
+  const handleStatusChange = async (uuid: string, status: 'approved' | 'rejected') => {
     try {
       await apiRequest<Company[]>({
-        url: `api/companies/${id}/status`,
+        url: `api/admin/companies/${uuid}/status`,
         method: 'PUT',
         data: {
           status: status,
@@ -122,10 +122,10 @@ const CompanyList: React.FC = () => {
     }
   };
 
-  const handlePasswordChange = async (id: number, newPassword: string) => {
+  const handlePasswordChange = async (uuid: string, newPassword: string) => {
     try {
       await apiRequest<Company[]>({
-        url: `api/companies/${id}/password`,
+        url: `api/admin/companies/${uuid}/password`,
         method: 'PUT',
         data: {
           newPassword: newPassword,
@@ -139,7 +139,7 @@ const CompanyList: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (uuid: string) => {
     if (
       !window.confirm(
         'Are you sure you want to delete this company? All data related to company will be deleted permanently.'
@@ -149,7 +149,7 @@ const CompanyList: React.FC = () => {
 
     try {
       await apiRequest<Company[]>({
-        url: `/api/companies/${id}`,
+        url: `/api/admin/companies/${uuid}`,
         method: 'DELETE',
         requireAuth: true,
       });
@@ -193,8 +193,8 @@ const CompanyList: React.FC = () => {
   const handleSubmitRejectReason = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (editingCompany?.id) {
-      await handleStatusChange(editingCompany.id, 'rejected');
+    if (editingCompany?.uuid) {
+      await handleStatusChange(editingCompany.uuid, 'rejected');
       setShowRejectModal(false);
       setRejectionFormData({
         notify: false,
@@ -207,8 +207,8 @@ const CompanyList: React.FC = () => {
   const handleSubmitNewPassword = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (editingCompany?.id) {
-      await handlePasswordChange(editingCompany.id, passwordFormData.newPassword);
+    if (editingCompany?.uuid) {
+      await handlePasswordChange(editingCompany.uuid, passwordFormData.newPassword);
       setShowPasswordModal(false);
       setPasswordFormData({
         newPassword: ''
@@ -256,19 +256,18 @@ const CompanyList: React.FC = () => {
             <div className="bg-white shadow overflow-hidden sm:rounded-md">
               <ul className="divide-y divide-gray-200">
                 {companies.map((company) => (
-                  <li key={company.id} className="px-6 py-4">
+                  <li key={company.uuid} className="px-6 py-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="text-lg font-medium text-gray-900">{company.companyName}</h3>
                         <p className="text-sm text-gray-500">{company.emailAddress}</p>
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            company.status === 'active'
-                              ? 'bg-green-100 text-green-800'
-                              : company.status === 'rejected'
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-yellow-100 text-yellow-800'
-                          }`}
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${company.status === 'active'
+                            ? 'bg-green-100 text-green-800'
+                            : company.status === 'rejected'
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-yellow-100 text-yellow-800'
+                            }`}
                         >
                           {company.status}
                         </span>
@@ -277,7 +276,7 @@ const CompanyList: React.FC = () => {
                         {company.status === 'pending' && (
                           <>
                             <button
-                              onClick={() => handleStatusChange(company.id, 'approved')}
+                              onClick={() => handleStatusChange(company.uuid, 'approved')}
                               className="text-green-600 hover:text-green-900"
                             >
                               <Check className="h-5 w-5" />
@@ -296,9 +295,9 @@ const CompanyList: React.FC = () => {
                         >
                           <Edit2 className="h-5 w-5" />
                         </button>
-                        {company.status === 'active' && (
+                        {company.status === 'approved' && (
                           <button
-                          onClick={() => handlePassword(company)}
+                            onClick={() => handlePassword(company)}
                             className="text-blue-600 hover:text-blue-900"
                           >
                             <Lock className="h-5 w-5" />
