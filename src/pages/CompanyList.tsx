@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import Navbar from '../components/Navbar';
 import { Company } from '../types';
 import { apiRequest } from '../lib/apiHelper';
+import { COMPANY_LICENSE_TYPE, US_STATES } from '../lib/constants';
 
 const CompanyList: React.FC = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -12,7 +13,7 @@ const CompanyList: React.FC = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Partial<Company>>({
     licenseNumber: '',
     licenseType: '',
     licenseExpirationDate: '',
@@ -26,6 +27,8 @@ const CompanyList: React.FC = () => {
     registeredAgentLastName: '',
     phoneNumber: '',
     emailAddress: '',
+    userEmailAddress: '',
+    password: '',
   });
   const [rejectionFormData, setRejectionFormData] = useState({
     rejectionReasons: '',
@@ -72,7 +75,7 @@ const CompanyList: React.FC = () => {
         toast.success('Company updated successfully');
       } else {
         await apiRequest<Company[]>({
-          url: '/api/companies',
+          url: '/api/admin/companies',
           method: 'POST',
           data: formData,
           requireAuth: true,
@@ -96,6 +99,8 @@ const CompanyList: React.FC = () => {
         registeredAgentLastName: '',
         phoneNumber: '',
         emailAddress: '',
+        userEmailAddress: '',
+        password: '',
       });
       fetchCompanies();
     } catch (error: any) {
@@ -240,6 +245,8 @@ const CompanyList: React.FC = () => {
                   registeredAgentLastName: '',
                   phoneNumber: '',
                   emailAddress: '',
+                  userEmailAddress: '',
+                  password: '',
                 });
                 setShowAddModal(true);
               }}
@@ -305,7 +312,7 @@ const CompanyList: React.FC = () => {
                         )}
 
                         <button
-                          onClick={() => handleDelete(company.id)}
+                          onClick={() => handleDelete(company.uuid)}
                           className="text-red-600 hover:text-red-900"
                         >
                           <Trash2 className="h-5 w-5" />
@@ -330,7 +337,7 @@ const CompanyList: React.FC = () => {
               <form onSubmit={handleSubmit}>
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="mb-4">
+                    <div className="mb-4 sm:col-span-2">
                       <label className="block text-gray-700 text-sm font-bold mb-2">
                         Company Name
                       </label>
@@ -340,18 +347,6 @@ const CompanyList: React.FC = () => {
                         className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         value={formData.companyName}
                         onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                      />
-                    </div>
-                    <div className="mb-4">
-                      <label className="block text-gray-700 text-sm font-bold mb-2">
-                        Email Address
-                      </label>
-                      <input
-                        type="email"
-                        required
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        value={formData.emailAddress}
-                        onChange={(e) => setFormData({ ...formData, emailAddress: e.target.value })}
                       />
                     </div>
                     <div className="mb-4">
@@ -372,13 +367,18 @@ const CompanyList: React.FC = () => {
                       <label className="block text-gray-700 text-sm font-bold mb-2">
                         License Type
                       </label>
-                      <input
-                        type="text"
+                      <select
+                        className="shadow appearance-none border rounded w-full bg-white py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         required
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         value={formData.licenseType}
                         onChange={(e) => setFormData({ ...formData, licenseType: e.target.value })}
-                      />
+                      >
+                        {
+                          COMPANY_LICENSE_TYPE.map((licenseType) => (
+                            <option value={licenseType.abbreviation}>{licenseType.name}</option>
+                          ))
+                        }
+                      </select>
                     </div>
                     <div className="mb-4">
                       <label className="block text-gray-700 text-sm font-bold mb-2">
@@ -416,13 +416,18 @@ const CompanyList: React.FC = () => {
                     </div>
                     <div className="mb-4">
                       <label className="block text-gray-700 text-sm font-bold mb-2">State</label>
-                      <input
-                        type="text"
+                      <select
+                        className="shadow appearance-none border rounded w-full bg-white py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         required
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         value={formData.state}
                         onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                      />
+                      >
+                        {
+                          US_STATES.map((licenseType) => (
+                            <option value={licenseType.abbreviation}>{licenseType.name}</option>
+                          ))
+                        }
+                      </select>
                     </div>
                     <div className="mb-4">
                       <label className="block text-gray-700 text-sm font-bold mb-2">Country</label>
@@ -474,6 +479,18 @@ const CompanyList: React.FC = () => {
                     </div>
                     <div className="mb-4">
                       <label className="block text-gray-700 text-sm font-bold mb-2">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        value={formData.emailAddress}
+                        onChange={(e) => setFormData({ ...formData, emailAddress: e.target.value })}
+                      />
+                    </div>
+                    <div className="mb-4">
+                      <label className="block text-gray-700 text-sm font-bold mb-2">
                         Phone Number
                       </label>
                       <input
@@ -484,6 +501,35 @@ const CompanyList: React.FC = () => {
                         onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                       />
                     </div>
+                    {
+                      !editingCompany &&
+                      <>
+                        <span className="text-md text-medium sm:col-span-2">Login Credentials</span>
+                        <div className="mb-4">
+                          <label className="block text-gray-700 text-sm font-bold mb-2">
+                            Email Address
+                          </label>
+                          <input
+                            type="email"
+                            required
+                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            value={formData.userEmailAddress}
+                            onChange={(e) => setFormData({ ...formData, userEmailAddress: e.target.value })}
+                          />
+                        </div>
+                        <div className="mb-4">
+                          <label className="block text-gray-700 text-sm font-bold mb-2">
+                            Password
+                          </label>
+                          <input
+                            type="password"
+                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            value={formData.password}
+                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                          />
+                        </div>
+                      </>
+                    }
                   </div>
                 </div>
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">

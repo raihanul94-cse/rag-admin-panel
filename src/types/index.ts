@@ -27,6 +27,8 @@ export interface Company {
   state: string;
   status: string;
   zip: string;
+  userEmailAddress?: string;
+  password?: string;
 }
 
 export interface Admin {
